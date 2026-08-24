@@ -1,0 +1,23 @@
+# Python virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS & Local configs
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+run_monitor.bat
+make_shortcut.ps1
+create_shortcut.py
+
+# Ultralytics & Model cache
+runs/
+*.tmp
