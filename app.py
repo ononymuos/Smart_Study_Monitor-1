@@ -1,3 +1,4 @@
+import os
 import cv2
 import cvzone
 from cvzone.FaceMeshModule import FaceMeshDetector
@@ -6,10 +7,11 @@ import pygame
 import numpy as np
 
 # ------------------- INITIALIZE AUDIO & MODELS -------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 pygame.mixer.init()
-alarm_sleep = pygame.mixer.Sound("alarm.mp3")       # Sleep alarm
-alarm_facehide = pygame.mixer.Sound("faudio.mp3")   # Face hidden/away alarm
-alarm_phone = pygame.mixer.Sound("paudio.mp3")      # Phone alarm
+alarm_sleep = pygame.mixer.Sound(os.path.join(BASE_DIR, "alarm.mp3"))       # Sleep alarm
+alarm_facehide = pygame.mixer.Sound(os.path.join(BASE_DIR, "faudio.mp3"))   # Face hidden/away alarm
+alarm_phone = pygame.mixer.Sound(os.path.join(BASE_DIR, "paudio.mp3"))      # Phone alarm
 
 current_playing = None
 
@@ -114,11 +116,12 @@ while True:
         face_dist, _ = face_detector.findDistance(face[FACE_LEFT], face[FACE_RIGHT])
         ratio = (eye_dist / face_dist) * 100
 
-        # Only count closed eyes towards sleep if NOT actively looking down at notebook
+        # Smoothly accumulate closed eyes with decay buffer instead of hard 0 reset
         if not is_reading and ratio < 11.0:
-            closed_frames += 1
+            closed_frames = min(closed_frames + 2, SLEEP_THRESHOLD_FRAMES + 10)
         else:
-            closed_frames = 0
+            # Decay buffer: step down gradually so single-frame blinks/flickers don't reset to 0
+            closed_frames = max(0, closed_frames - 1)
 
         if closed_frames >= SLEEP_THRESHOLD_FRAMES:
             is_sleepy = True
